@@ -3,6 +3,8 @@
     <PropertyGroup>
         <Title>Difi Sikker Digital Post Proxy Klient Docs</Title>
         <PackageId>Difi.SikkerDigitalPost.ProxyKlient.Docs</PackageId>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\signingkey.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -37,7 +39,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient\Difi.SikkerDigitalPost.Klient.csproj" />
+        <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient\Difi.SikkerDigitalPost.Klient.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -46,7 +48,7 @@
         </Compile>
     </ItemGroup>
     <ItemGroup>
-        <None Include="C:\Keys\signingkey.snk">
+        <None Include="..\signingkey.snk">
             <Link>signingkey.snk</Link>
         </None>
     </ItemGroup>

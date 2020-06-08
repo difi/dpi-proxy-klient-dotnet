@@ -16,11 +16,11 @@ jobs:
     - name: Print openssl version
       run: |
         openssl version
-#    - name: Decrypt signing key to use for strong-name
-#      env:
-#        SIGNINGKEY_ENC_PASSWORD: ${{ secrets.signingkeyEncPassword }}
-#      run: |
-#        openssl aes-256-cbc -salt -pbkdf2 -k "$SIGNINGKEY_ENC_PASSWORD" -in signingkey.snk.enc -out signingkey.snk -d
+    - name: Decrypt signing key to use for strong-name
+      env:
+        SIGNINGKEY_ENC_PASSWORD: ${{ secrets.signingkeyEncPassword }}
+      run: |
+        openssl aes-256-cbc -salt -pbkdf2 -k "$SIGNINGKEY_ENC_PASSWORD" -in signingkey.snk.enc -out signingkey.snk -d
     - name: Install dependencies
       run: dotnet restore
     - name: Build

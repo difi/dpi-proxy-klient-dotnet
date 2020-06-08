@@ -3,6 +3,8 @@
     <PropertyGroup>
         <Title>Difi Sikker Digital Post Proxy Klient</Title>
         <PackageId>Difi.SikkerDigitalPost.ProxyKlient</PackageId>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\signingkey.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -35,27 +37,27 @@
         <NoWarn>1591;NU1701</NoWarn>
         <DocumentationFile>bin\Release\Difi.SikkerDigitalPost.Klient.XML</DocumentationFile>
     </PropertyGroup>
-    
+
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-        <None Update="XmlValidering/xsd/*" />
-        <None Update="XmlValidering/xsd/ebxml/*" />
-        <None Update="XmlValidering/xsd/SBDH2004050602/*" />
-        <None Update="XmlValidering/xsd/w3/*" />
-        <None Update="XmlValidering/xsd/wssecurity/*" />
-        <None Update="XmlValidering/xsd/xmlsoap/*" />
-        <None Update="Resources/sertifikater/prod/*" />
-        <None Update="Resources/sertifikater/test/*" />
+        <None Update="XmlValidering/xsd/*"/>
+        <None Update="XmlValidering/xsd/ebxml/*"/>
+        <None Update="XmlValidering/xsd/SBDH2004050602/*"/>
+        <None Update="XmlValidering/xsd/w3/*"/>
+        <None Update="XmlValidering/xsd/wssecurity/*"/>
+        <None Update="XmlValidering/xsd/xmlsoap/*"/>
+        <None Update="Resources/sertifikater/prod/*"/>
+        <None Update="Resources/sertifikater/test/*"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="XmlValidering/xsd/*" />
-        <None Remove="XmlValidering/xsd/ebxml/*" />
-        <None Remove="XmlValidering/xsd/SBDH2004050602/*" />
-        <None Remove="XmlValidering/xsd/w3/*" />
-        <None Remove="XmlValidering/xsd/wssecurity/*" />
-        <None Remove="XmlValidering/xsd/xmlsoap/*" />
-        <None Remove="Resources/sertifikater/prod/*" />
-        <None Remove="Resources/sertifikater/test/*" />
+        <None Remove="XmlValidering/xsd/*"/>
+        <None Remove="XmlValidering/xsd/ebxml/*"/>
+        <None Remove="XmlValidering/xsd/SBDH2004050602/*"/>
+        <None Remove="XmlValidering/xsd/w3/*"/>
+        <None Remove="XmlValidering/xsd/wssecurity/*"/>
+        <None Remove="XmlValidering/xsd/xmlsoap/*"/>
+        <None Remove="Resources/sertifikater/prod/*"/>
+        <None Remove="Resources/sertifikater/test/*"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -77,29 +79,34 @@
         <EmbeddedResource Include="XmlValidering/xsd/xmlsoap/*">
             <SubType>Designer</SubType>
         </EmbeddedResource>
-        <EmbeddedResource Include="Resources/sertifikater/prod/*" />
-        <EmbeddedResource Include="Resources/sertifikater/test/*" />
+        <EmbeddedResource Include="Resources/sertifikater/prod/*"/>
+        <EmbeddedResource Include="Resources/sertifikater/test/*"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <Compile Include="..\SolutionItems\SharedAssemblyInfo.cs">
             <Link>Properties\SharedAssemblyInfo.cs</Link>
         </Compile>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="log4net" Version="2.0.8" />
-        <PackageReference Include="Macross.Json.Extensions" Version="1.4.1" />
-        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3" />
-        <PackageReference Include="NLog.Extensions.Logging" Version="1.6.2" />
-        <PackageReference Include="System.Net.Http" Version="4.3.4" />
-        <PackageReference Include="System.Text.Json" Version="4.7.1" />
+        <PackageReference Include="log4net" Version="2.0.8"/>
+        <PackageReference Include="Macross.Json.Extensions" Version="1.4.1"/>
+        <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.3"/>
+        <PackageReference Include="NLog.Extensions.Logging" Version="1.6.2"/>
+        <PackageReference Include="System.Net.Http" Version="4.3.4"/>
+        <PackageReference Include="System.Text.Json" Version="4.7.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient.Domene\Difi.SikkerDigitalPost.Klient.Domene.csproj"/>
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient.Domene\Difi.SikkerDigitalPost.Klient.Domene.csproj" />
+        <None Include="..\signingkey.snk">
+            <Link>signingkey.snk</Link>
+        </None>
     </ItemGroup>
-    
 </Project>
