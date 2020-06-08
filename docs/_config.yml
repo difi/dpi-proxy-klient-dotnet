@@ -5,7 +5,7 @@ siteUrlText: difi.github.io/dpi-proxy-klient-dotnet
 # current version of the software
 version: 1.0.0
 # url of the download button
-downloadUrl: https://www.nuget.org/packages?q=Difi.SikkerDigitalPost.Klient
+downloadUrl: https://www.nuget.org/packages?q=Difi.SikkerDigitalPost.ProxyKlient
 
 # licence of the software
 license: MIT License
