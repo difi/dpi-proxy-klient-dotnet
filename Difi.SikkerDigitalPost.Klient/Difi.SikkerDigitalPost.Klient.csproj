@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build">
 
     <PropertyGroup>
-        <Title>Difi Sikker Digital Post Klient</Title>
-        <PackageId>Difi.SikkerDigitalPost.Klient</PackageId>
+        <Title>Difi Sikker Digital Post Proxy Klient</Title>
+        <PackageId>Difi.SikkerDigitalPost.ProxyKlient</PackageId>
     </PropertyGroup>
 
     <PropertyGroup>

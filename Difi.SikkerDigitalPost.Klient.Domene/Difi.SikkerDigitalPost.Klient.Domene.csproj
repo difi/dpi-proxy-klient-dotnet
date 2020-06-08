@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build">
 
     <PropertyGroup>
-        <Title>Difi Sikker Digital Post Klient Domene</Title>
-        <PackageId>Difi.SikkerDigitalPost.Klient.Domene</PackageId>
+        <Title>Difi Sikker Digital Post Proxy Klient Domene</Title>
+        <PackageId>Difi.SikkerDigitalPost.ProxyKlient.Domene</PackageId>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -48,9 +48,6 @@
     </ItemGroup>
     
     <ItemGroup>
-      <Reference Include="Digipost.Api.Client.Shared, Version=3.0.0.0, Culture=neutral, PublicKeyToken=13a04c7692843c1c">
-        <HintPath>..\..\..\.nuget\packages\api-client-shared\3.0.0\lib\net46\Digipost.Api.Client.Shared.dll</HintPath>
-      </Reference>
       <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
         <HintPath>..\..\..\..\..\usr\local\share\dotnet\sdk\NuGetFallbackFolder\newtonsoft.json\10.0.1\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
       </Reference>
