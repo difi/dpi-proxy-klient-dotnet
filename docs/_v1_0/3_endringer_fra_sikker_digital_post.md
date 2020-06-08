@@ -17,6 +17,8 @@ API-et til sikker-digital-post-klient er bevart etter beste evne. Under er det l
 - Nøkler og sertifikat 
 
 
+Pakken `Difi.SikkerDigitalPost.Klient.Resources` er ikke videreført og kan fjernes som avhengighet.
+
 
 ### Konfigurasjon av miljø
 Konfigurasjon av miljø gjøres nå ved å spesifisere URL-en til integrasjonspunktet som man ønsker å benytte.
