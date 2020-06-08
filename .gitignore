@@ -132,7 +132,7 @@ pip-log.txt
 # Generated content
 combined*.css
 *.js.map
-Status API Training Shop Blog About © 2014 GitHub, Inc. Terms Privacy Security Contact 
+Status API Training Shop Blog About ï¿½ 2014 GitHub, Inc. Terms Privacy Security Contact 
 
 # NuGet Package files
 *.nupkg 
@@ -142,3 +142,5 @@ Kontaktregisteretsertifikater/
 
 #SigneringsnÃ¸kkel
 *.pfx
+
+*.snk
