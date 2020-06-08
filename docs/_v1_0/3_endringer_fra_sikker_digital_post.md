@@ -15,6 +15,7 @@ API-et til sikker-digital-post-klient er bevart etter beste evne. Under er det l
 - mpcID
 - Prioritet
 - Nøkler og sertifikat 
+- Printinstruksjoner
 
 
 Pakken `Difi.SikkerDigitalPost.Klient.Resources` er ikke videreført og kan fjernes som avhengighet.
@@ -90,5 +91,8 @@ Kø-prioritet settes nå i integrasjonspunktet.
 ### Nøkler og sertifikat
 Nøkler og sertifikater håndteres av integrasjonspunktet.
 
+
+### Printinstruksjoner
+Printinstruksjoner er ikke støttet i nåværende utgave.
 
 
