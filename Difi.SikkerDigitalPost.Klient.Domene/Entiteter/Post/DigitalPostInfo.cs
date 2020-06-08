@@ -1,7 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Aktører;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Varsel;
 using Difi.SikkerDigitalPost.Klient.Domene.Enums;
+using DateTimeConverter = Difi.SikkerDigitalPost.Klient.Domene.Extensions.DateTimeConverter;
 
 namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
 {
@@ -16,8 +19,14 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
         ///     Forsendelsen vil leveres til postkassen før dette tidspunkt, men ikke være synlig/tilgjengelig for innbygger.
         ///     Standardverdi er nå.
         /// </summary>
-        public DateTime Virkningstidspunkt = DateTime.Now;
+        [JsonPropertyName("virkningsdato")]
+        [JsonConverter(typeof(DateTimeConverter))]
+        public DateTime Virkningstidspunkt { get; set; } = DateTime.Now.ToLocalTime();
 
+        // Used for serialization only
+        public DigitalPostInfo() : base(null, "urn:no:difi:digitalpost:xsd:digital::digital")
+        { }
+        
         /// <param name="mottaker">Mottaker av digital post.</param>
         /// <param name="ikkeSensitivTittel">
         ///     Ikke-sensitiv tittel på brevet. Denne tittelen vil være synlig under transport av
@@ -29,7 +38,7 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
         /// </param>
         /// <param name="åpningskvittering">Ønskes kvittering når brevet blir åpnet av mottaker? Standard er false.</param>
         public DigitalPostInfo(DigitalPostMottaker mottaker, string ikkeSensitivTittel, Sikkerhetsnivå sikkerhetsnivå = Sikkerhetsnivå.Nivå4, bool åpningskvittering = false)
-            : base(mottaker)
+            : base(mottaker, "urn:no:difi:digitalpost:xsd:digital::digital")
         {
             IkkeSensitivTittel = ikkeSensitivTittel;
             Sikkerhetsnivå = sikkerhetsnivå;
@@ -43,12 +52,14 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
         ///     dhttp://begrep.difi.no/SikkerDigitalPost/1.2.0.RC1/meldinger/AapningsKvittering.
         ///     Standard er false.
         /// </summary>
+        [JsonPropertyName("aapningskvittering")]
         public bool Åpningskvittering { get; set; }
 
         /// <summary>
         ///     Nødvendig autentiseringsnivå som kreves av mottaker i postkassen for å åpne brevet.
         ///     Standardverdi er Nivå4
         /// </summary>
+        [JsonIgnore]
         public Sikkerhetsnivå Sikkerhetsnivå { get; set; }
 
         /// <summary>

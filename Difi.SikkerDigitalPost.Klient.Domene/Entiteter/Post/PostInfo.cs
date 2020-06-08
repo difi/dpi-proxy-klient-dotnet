@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Aktører;
 using Difi.SikkerDigitalPost.Klient.Domene.Enums;
 
@@ -10,24 +11,16 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
     /// </summary>
     public abstract class PostInfo
     {
-        protected PostInfo(PostMottaker mottaker)
-        {
-            Mottaker = mottaker;
-        }
 
+        [JsonIgnore]
+        public string Type { get; set; }
+        
         public PostMottaker Mottaker { get; set; }
-
-        internal PMode PMode()
+        
+        protected PostInfo(PostMottaker mottaker, string type)
         {
-            var type = GetType();
-
-            if (type == typeof (FysiskPostInfo))
-                return Enums.PMode.FormidleFysiskPost;
-
-            if (type == typeof (DigitalPostInfo))
-                return Enums.PMode.FormidleDigitalPost;
-
-            throw new ArgumentOutOfRangeException("postInfo", type, "PostInfo har feil type.");
+            Type = type;
+            Mottaker = mottaker;
         }
     }
 }

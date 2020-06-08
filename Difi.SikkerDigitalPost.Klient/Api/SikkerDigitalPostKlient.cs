@@ -1,28 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Threading.Tasks;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Aktører;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Forretning;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Transport;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post;
-using Difi.SikkerDigitalPost.Klient.Domene.Exceptions;
-using Difi.SikkerDigitalPost.Klient.Domene.Extensions;
-using Difi.SikkerDigitalPost.Klient.Envelope;
-using Difi.SikkerDigitalPost.Klient.Envelope.Abstract;
-using Difi.SikkerDigitalPost.Klient.Envelope.Forretningsmelding;
-using Difi.SikkerDigitalPost.Klient.Envelope.Kvitteringsbekreftelse;
-using Difi.SikkerDigitalPost.Klient.Envelope.Kvitteringsforespørsel;
 using Difi.SikkerDigitalPost.Klient.Internal;
-using Difi.SikkerDigitalPost.Klient.Internal.AsicE;
 using Difi.SikkerDigitalPost.Klient.Utilities;
 using Difi.SikkerDigitalPost.Klient.XmlValidering;
-using Digipost.Api.Client.Shared.Certificate;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using StandardBusinessDocument = Difi.SikkerDigitalPost.Klient.SBDH.StandardBusinessDocument;
 
 namespace Difi.SikkerDigitalPost.Klient.Api
 {
@@ -30,8 +17,6 @@ namespace Difi.SikkerDigitalPost.Klient.Api
     {
         private readonly ILogger<SikkerDigitalPostKlient> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        
-        internal CertificateValidationProperties CertificateValidationProperties { get; set; }
 
         /// <param name="databehandler">
         ///     Virksomhet (offentlig eller privat) som har en kontraktfestet avtale med Avsender med
@@ -44,11 +29,11 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// <remarks>
         ///     Se <a href="http://begrep.difi.no/SikkerDigitalPost/forretningslag/Aktorer">oversikt over aktører</a>
         /// </remarks>
-        public SikkerDigitalPostKlient(Databehandler databehandler, Klientkonfigurasjon klientkonfigurasjon) 
+        public SikkerDigitalPostKlient(Databehandler databehandler, Klientkonfigurasjon klientkonfigurasjon)
             : this(databehandler, klientkonfigurasjon, new NullLoggerFactory())
         {
         }
-        
+
         /// <param name="databehandler">
         ///     Virksomhet (offentlig eller privat) som har en kontraktfestet avtale med Avsender med
         ///     formål å dekke hele eller deler av prosessen med å formidle en digital postmelding fra
@@ -63,32 +48,18 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// <remarks>
         ///     Se <a href="http://begrep.difi.no/SikkerDigitalPost/forretningslag/Aktorer">oversikt over aktører</a>
         /// </remarks>
-        public SikkerDigitalPostKlient(Databehandler databehandler, Klientkonfigurasjon klientkonfigurasjon, ILoggerFactory loggerFactory)
+        public SikkerDigitalPostKlient(Databehandler databehandler, Klientkonfigurasjon klientkonfigurasjon,
+            ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<SikkerDigitalPostKlient>();
             _loggerFactory = loggerFactory;
-            
-            ValidateDatabehandlerCertificateAndThrowIfInvalid(databehandler, klientkonfigurasjon.Miljø);
+
+            //ValidateDatabehandlerCertificateAndThrowIfInvalid(databehandler, klientkonfigurasjon.Miljø);
 
             Databehandler = databehandler;
             Klientkonfigurasjon = klientkonfigurasjon;
             RequestHelper = new RequestHelper(klientkonfigurasjon, _loggerFactory);
-            CertificateValidationProperties = new CertificateValidationProperties(klientkonfigurasjon.Miljø.GodkjenteKjedeSertifikater, Klientkonfigurasjon.MeldingsformidlerOrganisasjon);
-        }
-
-        private void ValidateDatabehandlerCertificateAndThrowIfInvalid(Databehandler databehandler, Miljø miljø)
-        {
-            var valideringsResultat = CertificateValidator.ValidateCertificateAndChain(
-                databehandler.Sertifikat, 
-                databehandler.Organisasjonsnummer.Verdi, 
-                miljø.GodkjenteKjedeSertifikater
-            );
-
-            if (valideringsResultat.Type != CertificateValidationType.Valid)
-            {
-                throw new SecurityException($"Sertifikatet som brukes for { nameof(Databehandler) } er ikke gyldig. Prøver du å sende med et testsertifikat i produksjonsmiljø eller omvendt? Grunnen er '{valideringsResultat.Type.ToNorwegianString()}', beskrivelse: '{valideringsResultat.Message}'");
-
-            }
+            //CertificateValidationProperties = new CertificateValidationProperties(klientkonfigurasjon.Miljø.GodkjenteKjedeSertifikater, Klientkonfigurasjon.MeldingsformidlerOrganisasjon);
         }
 
         public Databehandler Databehandler { get; }
@@ -118,31 +89,10 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// </param>
         public async Task<Transportkvittering> SendAsync(Forsendelse forsendelse)
         {
-            var guidUtility = new GuidUtility();
-            _logger.LogDebug($"Utgående forsendelse, conversationId '{forsendelse.KonversasjonsId}', messageId '{guidUtility.MessageId}'.");
+            StandardBusinessDocument standardBusinessDocument = SBDForsendelseBuilder.BuildSBD(Databehandler, forsendelse);
 
-            var documentBundle = AsiceGenerator.Create(forsendelse, guidUtility, Databehandler.Sertifikat, Klientkonfigurasjon);
-            var forretningsmeldingEnvelope = new ForretningsmeldingEnvelope(new EnvelopeSettings(forsendelse, documentBundle, Databehandler, guidUtility, Klientkonfigurasjon));
-
-            ValidateEnvelopeAndThrowIfInvalid(forretningsmeldingEnvelope, forretningsmeldingEnvelope.GetType().Name);
-
-            var transportReceipt = (Transportkvittering) await RequestHelper.SendMessage(forretningsmeldingEnvelope, documentBundle).ConfigureAwait(false);
-            transportReceipt.AntallBytesDokumentpakke = documentBundle.BillableBytes;
-            var transportReceiptXml = transportReceipt.Xml;
-
-            if (transportReceipt is TransportOkKvittering)
-            {
-                _logger.LogDebug($"{transportReceipt}");
-
-                var responsvalidator = new ResponseValidator(forretningsmeldingEnvelope.Xml(), transportReceiptXml, CertificateValidationProperties);
-                responsvalidator.ValidateTransportReceipt(guidUtility);
-            }
-            else
-            {
-                _logger.LogError(($"{transportReceipt}"));
-            }
-
-            return transportReceipt;
+            return await RequestHelper.SendMessage(standardBusinessDocument, forsendelse.Dokumentpakke,
+                forsendelse.MetadataDocument);
         }
 
         /// <summary>
@@ -153,22 +103,6 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// </summary>
         /// <param name="kvitteringsforespørsel"></param>
         /// <returns></returns>
-        /// <remarks>
-        ///     <list type="table">
-        ///         <listheader>
-        ///             <description>
-        ///                 Dersom det ikke er tilgjengelige <see cref="Kvittering">Kvitteringer</see> skal det ventes følgende
-        ///                 tidsintervaller før en ny forespørsel gjøres:
-        ///             </description>
-        ///         </listheader>
-        ///         <item>
-        ///             <term>normal</term><description>Minimum 10 minutter</description>
-        ///         </item>
-        ///         <item>
-        ///             <term>prioritert</term><description>Minimum 1 minutt</description>
-        ///         </item>
-        ///     </list>
-        /// </remarks>
         public Kvittering HentKvittering(Kvitteringsforespørsel kvitteringsforespørsel)
         {
             return HentKvitteringOgBekreftForrige(kvitteringsforespørsel, null);
@@ -182,22 +116,6 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// </summary>
         /// <param name="kvitteringsforespørsel"></param>
         /// <returns></returns>
-        /// <remarks>
-        ///     <list type="table">
-        ///         <listheader>
-        ///             <description>
-        ///                 Dersom det ikke er tilgjengelige <see cref="Kvittering">Kvitteringer</see> skal det ventes følgende
-        ///                 tidsintervaller før en ny forespørsel gjøres:
-        ///             </description>
-        ///         </listheader>
-        ///         <item>
-        ///             <term>normal</term><description>Minimum 10 minutter</description>
-        ///         </item>
-        ///         <item>
-        ///             <term>prioritert</term><description>Minimum 1 minutt</description>
-        ///         </item>
-        ///     </list>
-        /// </remarks>
         public async Task<Kvittering> HentKvitteringAsync(Kvitteringsforespørsel kvitteringsforespørsel)
         {
             return await HentKvitteringOgBekreftForrigeAsync(kvitteringsforespørsel, null).ConfigureAwait(false);
@@ -213,22 +131,6 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// <param name="kvitteringsforespørsel"></param>
         /// <param name="forrigeKvittering"></param>
         /// <returns></returns>
-        /// <remarks>
-        ///     <list type="table">
-        ///         <listheader>
-        ///             <description>
-        ///                 Dersom det ikke er tilgjengelige <see cref="Kvittering">Kvitteringer</see> skal det ventes følgende
-        ///                 tidsintervaller før en ny forespørsel gjøres:
-        ///             </description>
-        ///         </listheader>
-        ///         <item>
-        ///             <term>normal</term><description>Minimum 10 minutter</description>
-        ///         </item>
-        ///         <item>
-        ///             <term>prioritert</term><description>Minimum 1 minutt</description>
-        ///         </item>
-        ///     </list>
-        /// </remarks>
         public Kvittering HentKvitteringOgBekreftForrige(Kvitteringsforespørsel kvitteringsforespørsel,
             Forretningskvittering forrigeKvittering)
         {
@@ -245,23 +147,8 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// <param name="kvitteringsforespørsel"></param>
         /// <param name="forrigeKvittering"></param>
         /// <returns></returns>
-        /// <remarks>
-        ///     <list type="table">
-        ///         <listheader>
-        ///             <description>
-        ///                 Dersom det ikke er tilgjengelige <see cref="Kvittering">Kvitteringer</see> skal det ventes følgende
-        ///                 tidsintervaller før en ny forespørsel gjøres:
-        ///             </description>
-        ///         </listheader>
-        ///         <item>
-        ///             <term>normal</term><description>Minimum 10 minutter</description>
-        ///         </item>
-        ///         <item>
-        ///             <term>prioritert</term><description>Minimum 1 minutt</description>
-        ///         </item>
-        ///     </list>
-        /// </remarks>
-        public async Task<Kvittering> HentKvitteringOgBekreftForrigeAsync(Kvitteringsforespørsel kvitteringsforespørsel, Forretningskvittering forrigeKvittering)
+        public async Task<Kvittering> HentKvitteringOgBekreftForrigeAsync(Kvitteringsforespørsel kvitteringsforespørsel,
+            Forretningskvittering forrigeKvittering)
         {
             if (forrigeKvittering != null)
             {
@@ -272,31 +159,34 @@ namespace Difi.SikkerDigitalPost.Klient.Api
 
             _logger.LogDebug($"Utgående kvitteringsforespørsel, messageId '{guidUtility.MessageId}'.");
 
-            var envelopeSettings = new EnvelopeSettings(kvitteringsforespørsel, Databehandler, guidUtility);
-            var kvitteringsforespørselEnvelope = new KvitteringsforespørselEnvelope(envelopeSettings);
 
-            ValidateEnvelopeAndThrowIfInvalid(kvitteringsforespørselEnvelope, kvitteringsforespørselEnvelope.GetType().Name);
-
-            var receipt = await RequestHelper.GetReceipt(kvitteringsforespørselEnvelope).ConfigureAwait(false);
-            var transportReceiptXml = receipt.Xml;
-
-            if (receipt is TomKøKvittering)
+            int GUARD = 100;
+            for (int i = 0; i < GUARD; i++)
             {
-                _logger.LogDebug($"{receipt}");
-                SecurityValidationOfEmptyQueueReceipt(transportReceiptXml, kvitteringsforespørselEnvelope.Xml());
-            }
-            else if (receipt is Forretningskvittering)
-            {
-                _logger.LogDebug($"{receipt}");
-                SecurityValidationOfMessageReceipt(transportReceiptXml, kvitteringsforespørselEnvelope);
+                IntegrasjonspunktKvittering ipKvittering = await RequestHelper.GetReceipt();
+
+                if (ipKvittering == null)
+                {
+                    return new TomKøKvittering();
+                }
+
+                var shouldFetchKvitteringAgain =
+                    ipKvittering.status == IntegrasjonspunktKvitteringType.SENDT ||
+                    ipKvittering.status == IntegrasjonspunktKvitteringType.OPPRETTET;
+
+                if (shouldFetchKvitteringAgain)
+                {
+                    await RequestHelper.ConfirmReceipt(ipKvittering.id);
+                }
+                else
+                {
+                    return KvitteringFactory.GetKvittering(ipKvittering);
+                }
             }
 
-            else if (receipt is Transportkvittering)
-            {
-                _logger.LogDebug($"{receipt}");
-            }
-
-            return receipt;
+            _logger.LogWarning(
+                $"Antall forsøk på å hente kvittering overskredet. Det kan komme av det er mange {IntegrasjonspunktKvitteringType.SENDT}- og {IntegrasjonspunktKvitteringType.OPPRETTET}-kvitteringer på integrasjonspunktkøen. Prøv igjen.");
+            return null;
         }
 
         /// <summary>
@@ -372,36 +262,17 @@ namespace Difi.SikkerDigitalPost.Klient.Api
         /// </remarks>
         public async Task BekreftAsync(Forretningskvittering kvittering)
         {
-            var envelopeSettings = new EnvelopeSettings(kvittering, Databehandler, new GuidUtility());
-            var bekreftKvitteringEnvelope = new KvitteringsbekreftelseEnvelope(envelopeSettings);
-
-            ValidateEnvelopeAndThrowIfInvalid(bekreftKvitteringEnvelope, bekreftKvitteringEnvelope.GetType().Name);
-
-            await RequestHelper.ConfirmReceipt(bekreftKvitteringEnvelope).ConfigureAwait(false);
-            _logger.LogDebug($"Bekreftet kvittering, conversationId '{kvittering.KonversasjonsId}'");
-        }
-
-        private void SecurityValidationOfEmptyQueueReceipt(XmlDocument kvittering, XmlDocument forretningsmelding)
-        {
-            var responseValidator = new ResponseValidator(forretningsmelding, kvittering, CertificateValidationProperties);
-            responseValidator.ValidateEmptyQueueReceipt();
-        }
-
-        private void SecurityValidationOfMessageReceipt(XmlDocument kvittering, KvitteringsforespørselEnvelope kvitteringsforespørselEnvelope)
-        {
-            var valideringAvResponsSignatur = new ResponseValidator(kvitteringsforespørselEnvelope.Xml(), kvittering, CertificateValidationProperties);
-            valideringAvResponsSignatur.ValidateMessageReceipt();
-        }
-
-        private void ValidateEnvelopeAndThrowIfInvalid(AbstractEnvelope envelope, string prefix)
-        {
-            List<string> validationMessages;
-            var isValid = SdpXmlValidator.Instance.Validate(envelope.Xml().OuterXml, out validationMessages);
-            if (!isValid)
+            if (kvittering == null || kvittering.IntegrasjonsPunktId == -1L)
             {
-                var errorDescription = $"Ikke gyldig innhold i {prefix}. {validationMessages.Aggregate((current, variable) => current + Environment.NewLine + variable)}";
-                _logger.LogWarning(errorDescription);
-                throw new XmlValidationException(errorDescription, validationMessages);
+                IntegrasjonspunktKvittering nyKvittering = await RequestHelper.GetReceipt();
+
+                await RequestHelper.ConfirmReceipt(nyKvittering.id);
+                _logger.LogDebug($"Bekreftet kvittering, conversationId '{nyKvittering.conversationId}'");
+            }
+            else
+            {
+                await RequestHelper.ConfirmReceipt(kvittering.IntegrasjonsPunktId);
+                _logger.LogDebug($"Bekreftet kvittering, conversationId '{kvittering.KonversasjonsId}'");
             }
         }
     }

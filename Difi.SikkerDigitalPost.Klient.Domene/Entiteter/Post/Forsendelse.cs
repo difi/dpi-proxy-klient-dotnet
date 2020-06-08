@@ -57,6 +57,8 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
             Språkkode = språkkode;
             MpcId = mpcId;
             KonversasjonsId = konversasjonsId;
+            
+            MottakerPersonIdentifikator = postInfo is FysiskPostInfo fysiskPostInfo ? fysiskPostInfo.Personidentifikator : (PostInfo.Mottaker as DigitalPostMottaker).Personidentifikator;
         }
 
         /// <summary>
@@ -65,6 +67,8 @@ namespace Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post
         /// </summary>
         public Avsender Avsender { get; set; }
 
+        public string MottakerPersonIdentifikator { get; set; }
+        
         /// <summary>
         ///     Informasjon som brukes av postkasseleverandør for å behandle den digitale posten.
         /// </summary>
