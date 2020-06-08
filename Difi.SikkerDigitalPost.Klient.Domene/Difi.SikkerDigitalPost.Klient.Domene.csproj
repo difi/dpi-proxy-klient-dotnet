@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build">
+
+    <PropertyGroup>
+        <Title>Difi Sikker Digital Post Klient Domene</Title>
+        <PackageId>Difi.SikkerDigitalPost.Klient.Domene</PackageId>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Difi.SikkerDigitalPost.Klient.Domene</RootNamespace>
+        <AssemblyName>Difi.SikkerDigitalPost.Klient.Domene</AssemblyName>
+        <ProjectGuid>{C231BA31-5C58-4D8A-9040-DC604B6755E4}</ProjectGuid>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>1591;NU1701</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>1591;NU1701</NoWarn>
+        <DocumentationFile>bin\Release\Difi.SikkerDigitalPost.Klient.Domene.XML</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\SolutionItems\SharedAssemblyInfo.cs">
+            <Link>Properties\SharedAssemblyInfo.cs</Link>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BouncyCastle" Version="1.8.5" />
+      <PackageReference Include="Difi.Felles.Utility" Version="3.0.2" />
+      <PackageReference Include="Digipost.Api.Client.Shared" Version="5.0.0" />
+      <PackageReference Include="System.Security.Cryptography.Xml" Version="4.5.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Reference Include="Digipost.Api.Client.Shared, Version=3.0.0.0, Culture=neutral, PublicKeyToken=13a04c7692843c1c">
+        <HintPath>..\..\..\.nuget\packages\api-client-shared\3.0.0\lib\net46\Digipost.Api.Client.Shared.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build">
+
+    <PropertyGroup>
+        <Title>Difi Sikker Digital Post Klient Testklient</Title>
+        <PackageId>Difi.SikkerDigitalPost.Klient.Testklient</PackageId>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <RootNamespace>Difi.SikkerDigitalPost.Klient.Testklient</RootNamespace>
+        <AssemblyName>Difi.SikkerDigitalPost.Klient.Testklient</AssemblyName>
+        <ProjectGuid>{2E68711D-6A65-4E3B-94E1-7CADEF3DC8FB}</ProjectGuid>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>1591;NU1701</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>1591;NU1701</NoWarn>
+        <DocumentationFile>bin\Release\Difi.SikkerDigitalPost.Klient.Testklient.XML</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <None Update="Properties/Settings.settings" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Resources/sertifikater/prod/*" />
+        <EmbeddedResource Include="Resources/sertifikater/test/*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient.Domene\Difi.SikkerDigitalPost.Klient.Domene.csproj" />
+      <ProjectReference Include="..\Difi.SikkerDigitalPost.Klient\Difi.SikkerDigitalPost.Klient.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="log4net" Version="2.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\SolutionItems\SharedAssemblyInfo.cs">
+            <Link>Properties\SharedAssemblyInfo.cs</Link>
+        </Compile>
+    </ItemGroup>
+    
+</Project>
