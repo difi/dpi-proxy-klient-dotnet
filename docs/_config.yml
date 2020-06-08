@@ -1,9 +1,9 @@
 # name of the software
-name: Sikker Digital Post .NET
-siteUrlText: difi.github.io/difi-sikker-digital-post-klient-dotnet
+name: Sikker digital post proxyklient .NET
+siteUrlText: difi.github.io/dpi-proxy-klient-dotnet
 
 # current version of the software
-version: 3.0.1
+version: 1.0.0
 # url of the download button
 downloadUrl: https://www.nuget.org/packages?q=Difi.SikkerDigitalPost.Klient
 
@@ -12,7 +12,7 @@ license: MIT License
 licenseUrl: http://opensource.org/licenses/MIT
 
 #baseurl: "/sikker-digital-post-net-klient" # the subpath of your site, e.g. /blog/
-baseurl: "/sikker-digital-post-klient-dotnet"
+baseurl: "/dpi-proxy-klient-dotnet"
 
 ##Version handling
 currentCollecion: "v1_0"
@@ -21,27 +21,6 @@ versions: ["1.0"]
 
 # Collection of versions
 collections:
-  v1_2:  
-    output: true
-    permalink: /v1.2/
-  v1_3:  
-    output: true
-    permalink: /v1.3/
-  v1_4:  
-    output: true
-    permalink: /v1.4/
-  v1_5:  
-    output: true
-    permalink: /v1.5/
-  v1_6_11:  
-    output: true
-    permalink: /v1.6-1.11/
-  v2_0:
-    output: true
-    permalink: /v2.0/
-  v3_0:
-    output: true
-    permalink: /v3.0/
   v1_0:
     output: true
     permalink: /v1.0/
@@ -51,19 +30,19 @@ aboutSide: "about.html"
 
 # list of additional links on the right of the top menu
 headerLinks:
-  - title: Om sikker digital post
-    url: /sikker-digital-post-klient-dotnet/about.html
+  - title: Om sikker digital post proxyklient
+    url: /dpi-proxy-klient-dotnet/about.html
   - title: GitHub
-    url: https://github.com/difi/sikker-digital-post-net-klient
+    url: https://github.com/difi/dpi-proxy-klient-dotnet
   - title: Download Nuget Package
-    url: https://www.nuget.org/packages?q=Difi.SikkerDigitalPost.Klient
+    url: https://www.nuget.org/packages?q=Difi.SikkerDigitalPost.ProxyKlient
   - title: Issues
-    url: https://github.com/difi/sikker-digital-post-net-klient/issues
+    url: https://github.com/difi/dpi-proxy-klient-dotnet/issues
 
 # github buttons
 githubButton:
   user: difi
-  repo: sikker-digital-post-klient-dotnet
+  repo: dpi-proxy-klient-dotnet
 
 # twitter buttons
 twitter:

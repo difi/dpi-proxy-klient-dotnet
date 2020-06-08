@@ -19,7 +19,7 @@ namespace Difi.SikkerDigitalPost.Klient.Handlers
         {
             var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-            return $"difi-sikker-digital-post-klient-dotnet/{assemblyVersion} (netcore/{GetNetCoreVersion()})";
+            return $"difi-sikker-digital-post-proxy-klient-dotnet/{assemblyVersion} (netcore/{GetNetCoreVersion()})";
         }
         
         private static string GetNetCoreVersion()
