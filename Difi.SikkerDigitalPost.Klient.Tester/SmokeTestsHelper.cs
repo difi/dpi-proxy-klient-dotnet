@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using Difi.SikkerDigitalPost.Klient.Api;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter;
@@ -9,7 +8,6 @@ using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Forretning;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Transport;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post;
-using Difi.SikkerDigitalPost.Klient.Internal.AsicE;
 using Difi.SikkerDigitalPost.Klient.Tester.Utilities;
 using Difi.SikkerDigitalPost.Klient.Utilities;
 using Difi.SikkerDigitalPost.Klient.XmlValidering;
@@ -21,7 +19,6 @@ namespace Difi.SikkerDigitalPost.Klient.Tester
 {
     internal class SmokeTestsHelper
     {
-        private static readonly Organisasjonsnummer DifiOrganisasjonsnummer = new Organisasjonsnummer("991825827");
         private readonly SikkerDigitalPostKlient _klient;
 
         private Forsendelse _forsendelse;
@@ -43,14 +40,33 @@ namespace Difi.SikkerDigitalPost.Klient.Tester
             }
 
             var serviceProvider = LoggingUtility.CreateServiceProviderAndSetUpLogging();
-            _klient = new SikkerDigitalPostKlient(new Databehandler(DomainUtility.Organisasjonsnummer(), DomainUtility.GetAvsenderCertificate()), config, serviceProvider.GetService<ILoggerFactory>());
+            _klient = new SikkerDigitalPostKlient(new Databehandler(DomainUtility.PostenOrganisasjonsnummer()), config, serviceProvider.GetService<ILoggerFactory>());
+        }
+        
+        public SmokeTestsHelper Assert_Empty_Queue()
+        {
+            var hentKvittering = _klient.HentKvittering(new Kvitteringsforespørsel());
+            Assert.True(hentKvittering is TomKøKvittering);
+
+            return this;
         }
 
+        public SmokeTestsHelper CreateDigitalForsendelseWithEHF()
+        {
+            _forsendelse = DomainUtility.GetForsendelseWithEHF();
+
+            return this;
+        }
+        
         public SmokeTestsHelper Create_Digital_Forsendelse_with_Datatype()
         {
-            _forsendelse = DomainUtility.GetForsendelseSimple();
+            _forsendelse = DomainUtility.GetForsendelseForDataType();
             
-            var raw = "<?xml version=\"1.0\" encoding=\"utf-8\"?><lenke xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://begrep.difi.no/sdp/utvidelser/lenke\"><url>https://www.test.no</url><beskrivelse lang=\"nb\">Dette er en lenke utvidelse</beskrivelse></lenke>";
+            var raw = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                      "<lenke xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"http://begrep.difi.no/sdp/utvidelser/lenke\">" +
+                      "<url>https://www..no</url>" +
+                      "<beskrivelse lang=\"nb\">Dette er en lenke utvidelse</beskrivelse>" +
+                      "</lenke>";
 
             MetadataDocument metadataDocument = new MetadataDocument("lenke.xml", "application/vnd.difi.dpi.lenke+xml", raw);
 
@@ -151,7 +167,7 @@ namespace Difi.SikkerDigitalPost.Klient.Tester
         {
             Thread.Sleep(3000);
 
-            var kvitteringsforespørsel = new Kvitteringsforespørsel(_forsendelse.Prioritet, _forsendelse.MpcId);
+            var kvitteringsforespørsel = new Kvitteringsforespørsel();
             var kvittering = _klient.HentKvittering(kvitteringsforespørsel);
             return kvittering;
         }

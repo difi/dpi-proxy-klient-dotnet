@@ -14,11 +14,10 @@ namespace Difi.SikkerDigitalPost.Klient.Tester.Enhetstester
             public void EnkelKonstruktørUtenVarslingstidspunkt()
             {
                 //Arrange
-                var postInfo = DomainUtility.GetDigitalPostInfoWithTestCertificate();
+                var postInfo = DomainUtility.GetDigitalPostInfoSimple();
                 var mobilnummer = "12345678";
                 var varsel = "Et lite varsel pr SMS.";
                 postInfo.SmsVarsel = new SmsVarsel(mobilnummer, varsel);
-                var forventedeVarslingerEtterDager = new List<int> {0};
 
                 //Act
 
@@ -26,14 +25,13 @@ namespace Difi.SikkerDigitalPost.Klient.Tester.Enhetstester
                 var smsVarsel = postInfo.SmsVarsel;
                 Assert.Equal(mobilnummer, smsVarsel.Mobilnummer);
                 Assert.Equal(varsel, smsVarsel.Varslingstekst);
-                Assert.Equal(forventedeVarslingerEtterDager, (ICollection) smsVarsel.VarselEtterDager);
             }
 
             [Fact]
             public void KonstruktørMedVarslingstidspunktSomListe()
             {
                 //Arrange
-                var postInfo = DomainUtility.GetDigitalPostInfoWithTestCertificate();
+                var postInfo = DomainUtility.GetDigitalPostInfoSimple();
                 var mobilnummer = "12345678";
                 var varsel = "Et lite varsel pr SMS.";
                 var varslingerEtterDager = new List<int> {0, 10, 15};
@@ -45,14 +43,13 @@ namespace Difi.SikkerDigitalPost.Klient.Tester.Enhetstester
                 var smsVarsel = postInfo.SmsVarsel;
                 Assert.Equal(mobilnummer, smsVarsel.Mobilnummer);
                 Assert.Equal(varsel, smsVarsel.Varslingstekst);
-                Assert.Equal(varslingerEtterDager, (ICollection) smsVarsel.VarselEtterDager);
             }
 
             [Fact]
             public void KonstruktørMedVarslingstidspunktSomArgumenter()
             {
                 //Arrange
-                var postInfo = DomainUtility.GetDigitalPostInfoWithTestCertificate();
+                var postInfo = DomainUtility.GetDigitalPostInfoSimple();
                 var mobilnummer = "12345678";
                 var varsel = "Et lite varsel pr SMS.";
                 postInfo.SmsVarsel = new SmsVarsel(mobilnummer, varsel, 0, 10, 15);
@@ -64,7 +61,6 @@ namespace Difi.SikkerDigitalPost.Klient.Tester.Enhetstester
                 var smsVarsel = postInfo.SmsVarsel;
                 Assert.Equal(mobilnummer, smsVarsel.Mobilnummer);
                 Assert.Equal(varsel, smsVarsel.Varslingstekst);
-                Assert.Equal(forventedeVarslingerEtterDager, (ICollection) smsVarsel.VarselEtterDager);
             }
         }
     }

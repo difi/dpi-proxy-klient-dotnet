@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml;
+using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Forretning;
-using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Transport;
 using Difi.SikkerDigitalPost.Klient.Domene.Enums;
 using Difi.SikkerDigitalPost.Klient.Domene.Exceptions;
 using Difi.SikkerDigitalPost.Klient.Utilities;
@@ -10,10 +10,10 @@ namespace Difi.SikkerDigitalPost.Klient
 {
     public class Kvitteringsparser
     {
-        public static Leveringskvittering TilLeveringskvittering(XmlDocument leveringskvitteringXmlDocument)
+        public static Leveringskvittering TilLeveringskvittering(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(leveringskvitteringXmlDocument);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(leveringskvitteringXmlDocument);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
 
             return new Leveringskvittering(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -24,10 +24,10 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static Mottakskvittering TilMottakskvittering(XmlDocument mottakskvitteringXmlDocument)
+        public static Mottakskvittering TilMottakskvittering(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(mottakskvitteringXmlDocument);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(mottakskvitteringXmlDocument);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
 
             return new Mottakskvittering(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -38,10 +38,10 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static Returpostkvittering TilReturpostkvittering(XmlDocument returpostkvitteringXmlDocument)
+        public static Returpostkvittering TilReturpostkvittering(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(returpostkvitteringXmlDocument);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(returpostkvitteringXmlDocument);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
 
             return new Returpostkvittering(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -52,11 +52,11 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static VarslingFeiletKvittering TilVarslingFeiletKvittering(XmlDocument varslingFeiletXmlDocument)
+        public static VarslingFeiletKvittering TilVarslingFeiletKvittering(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(varslingFeiletXmlDocument);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(varslingFeiletXmlDocument);
-            var varslingfeiletKvitteringsfelter = HentVarslingFeiletKvitteringsfelter(varslingFeiletXmlDocument);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
+            var varslingfeiletKvitteringsfelter = HentVarslingFeiletKvitteringsfelter(integrasjonspunktKvittering);
 
             return new VarslingFeiletKvittering(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -69,10 +69,10 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static Åpningskvittering TilÅpningskvittering(XmlDocument åpningskvitteringXmlDocument)
+        public static Åpningskvittering TilÅpningskvittering(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(åpningskvitteringXmlDocument);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(åpningskvitteringXmlDocument);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
 
             return new Åpningskvittering(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -83,11 +83,11 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static Feilmelding TilFeilmelding(XmlDocument feilmelding)
+        public static Feilmelding TilFeilmelding(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
-            var kvitteringFelter = HentKvitteringsfelter(feilmelding);
-            var forretningskvitteringfelter = HentForretningskvitteringFelter(feilmelding);
-            var feilmeldingfelter = HentFeilmeldingsfelter(feilmelding);
+            var kvitteringFelter = HentKvitteringsfelter(integrasjonspunktKvittering);
+            var forretningskvitteringfelter = HentForretningskvitteringFelter(integrasjonspunktKvittering);
+            var feilmeldingfelter = HentFeilmeldingsfelter(integrasjonspunktKvittering);
 
             return new Feilmelding(kvitteringFelter.MeldingsId, forretningskvitteringfelter.KonversasjonsId, forretningskvitteringfelter.BodyReferenceUri, forretningskvitteringfelter.DigestValue)
             {
@@ -100,43 +100,11 @@ namespace Difi.SikkerDigitalPost.Klient
             };
         }
 
-        public static TomKøKvittering TilTomKøKvittering(XmlDocument tomKøkvitteringXmlDocument)
-        {
-            var kvitteringFelter = HentKvitteringsfelter(tomKøkvitteringXmlDocument);
-
-            return new TomKøKvittering
-            {
-                MeldingsId = kvitteringFelter.MeldingsId,
-                ReferanseTilMeldingId = kvitteringFelter.ReferanseTilMeldingId,
-                SendtTidspunkt = kvitteringFelter.SendtTidspunkt,
-                Xml = kvitteringFelter.Xml
-            };
-        }
-
-        public static TransportFeiletKvittering TilTransportFeiletKvittering(XmlDocument transportFeiletXmlDocument)
-        {
-            var kvitteringFelter = HentKvitteringsfelter(transportFeiletXmlDocument, false);
-            var transportFeiletFelter = HentTransportFeiletKvitteringsfelter(transportFeiletXmlDocument);
-
-            return new TransportFeiletKvittering
-            {
-                MeldingsId = kvitteringFelter.MeldingsId,
-                ReferanseTilMeldingId = kvitteringFelter.ReferanseTilMeldingId,
-                SendtTidspunkt = kvitteringFelter.SendtTidspunkt,
-                Xml = kvitteringFelter.Xml,
-                Alvorlighetsgrad = transportFeiletFelter.Alvorlighetsgrad,
-                Beskrivelse = transportFeiletFelter.Beskrivelse,
-                Feilkode = transportFeiletFelter.Feilkode,
-                Kategori = transportFeiletFelter.Kategori,
-                Opprinnelse = transportFeiletFelter.Opprinnelse
-            };
-        }
-
-        private static Kvitteringsfelter HentKvitteringsfelter(XmlDocument kvittering, bool sjekkEtterReferanseTilMeldingsId = true)
+        private static Kvitteringsfelter HentKvitteringsfelter(IntegrasjonspunktKvittering integrasjonspunktKvittering, bool sjekkEtterReferanseTilMeldingsId = true)
         {
             try
             {
-                return ParseKvitteringsFelter(kvittering, sjekkEtterReferanseTilMeldingsId);
+                return ParseKvitteringsFelter(integrasjonspunktKvittering, sjekkEtterReferanseTilMeldingsId);
             }
             catch (Exception e)
             {
@@ -144,47 +112,40 @@ namespace Difi.SikkerDigitalPost.Klient
             }
         }
 
-        private static Kvitteringsfelter ParseKvitteringsFelter(XmlDocument kvittering, bool sjekkEtterReferanseTilMeldingsId)
+        private static Kvitteringsfelter ParseKvitteringsFelter(IntegrasjonspunktKvittering integrasjonspunktKvittering, bool sjekkEtterReferanseTilMeldingsId)
         {
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(integrasjonspunktKvittering.rawReceipt);
+            
             return new Kvitteringsfelter
             {
-                SendtTidspunkt = Convert.ToDateTime(GetXmlNodeFromDocument(kvittering, "//ns6:Timestamp").InnerText),
-                MeldingsId = GetXmlNodeFromDocument(kvittering, "//ns6:MessageId").InnerText,
-                Xml = kvittering,
-                ReferanseTilMeldingId = sjekkEtterReferanseTilMeldingsId ? GetXmlNodeFromDocument(kvittering, "//ns6:RefToMessageId").InnerText : null
+                SendtTidspunkt = Convert.ToDateTime(GetXmlNodeFromDocument(document, "//ns9:tidspunkt").InnerText),
+                MeldingsId = integrasjonspunktKvittering.messageId.ToString(),
+                Xml = document,
+                ReferanseTilMeldingId = sjekkEtterReferanseTilMeldingsId ? integrasjonspunktKvittering.conversationId.ToString() : null
             };
         }
 
-        public static TransportOkKvittering TilTransportOkKvittering(XmlDocument transportOkXmlDocument)
-        {
-            var kvitteringsfelter = HentKvitteringsfelter(transportOkXmlDocument);
-
-            return new TransportOkKvittering
-            {
-                MeldingsId = kvitteringsfelter.MeldingsId,
-                ReferanseTilMeldingId = kvitteringsfelter.ReferanseTilMeldingId,
-                SendtTidspunkt = kvitteringsfelter.SendtTidspunkt,
-                Xml = kvitteringsfelter.Xml
-            };
-        }
-
-        private static Forretningskvitteringfelter HentForretningskvitteringFelter(XmlDocument forretningskvittering)
+        private static Forretningskvitteringfelter HentForretningskvitteringFelter(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
             var forretningskvittergFelter = new Forretningskvitteringfelter();
 
-            var bodyId = SjekkForretningskvitteringForKonsistens(forretningskvittering);
-
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(integrasjonspunktKvittering.rawReceipt);
+            
             try
             {
-                var guidNode = GetXmlNodeFromDocument(forretningskvittering, "//ns3:BusinessScope/ns3:Scope/ns3:InstanceIdentifier");
+                var guidNode = GetXmlNodeFromDocument(document, "//ns3:BusinessScope/ns3:Scope/ns3:InstanceIdentifier");
                 forretningskvittergFelter.KonversasjonsId = new Guid(guidNode.InnerText);
 
-                var tidspunktNode = GetXmlNodeFromDocument(forretningskvittering, "//ns9:tidspunkt");
+                forretningskvittergFelter.IntegrasjonsPunktId = integrasjonspunktKvittering.id;
+                
+                var tidspunktNode = GetXmlNodeFromDocument(document, "//ns9:tidspunkt");
                 forretningskvittergFelter.Generert = Convert.ToDateTime(tidspunktNode.InnerText);
 
-                var bodyReferenceNode = forretningskvittering.SelectSingleNode("//ns5:Reference[@URI = '#" + bodyId + "']", GetNamespaceManager(forretningskvittering));
+                var bodyReferenceNode = document.SelectSingleNode("//ns9:kvittering/ns5:Signature/ns5:SignedInfo/ns5:Reference", GetNamespaceManager(document));
                 forretningskvittergFelter.BodyReferenceUri = bodyReferenceNode.Attributes["URI"].Value;
-                forretningskvittergFelter.DigestValue = bodyReferenceNode.SelectSingleNode("//ds:DigestValue", GetNamespaceManager(forretningskvittering)).InnerText;
+                forretningskvittergFelter.DigestValue = bodyReferenceNode.SelectSingleNode("//ds:DigestValue", GetNamespaceManager(document)).InnerText;
             }
             catch (Exception e)
             {
@@ -194,35 +155,21 @@ namespace Difi.SikkerDigitalPost.Klient
             return forretningskvittergFelter;
         }
 
-        private static string SjekkForretningskvitteringForKonsistens(XmlDocument document)
-        {
-            var partInfo = document.SelectSingleNode("//ns6:PartInfo", GetNamespaceManager(document));
-            var partInfoBodyId = string.Empty;
-            if (partInfo.Attributes.Count > 0)
-                partInfoBodyId = partInfo.Attributes["href"].Value;
-
-            var bodyId = document.SelectSingleNode("//env:Body", GetNamespaceManager(document)).Attributes["wsu:Id"].Value;
-
-            if (!partInfoBodyId.Equals(string.Empty) && !bodyId.Equals(partInfoBodyId))
-            {
-                throw new SecurityException(
-                    $"Id i PartInfo og i Body matcher er ikke like. Partinfo har '{partInfoBodyId}', body har '{bodyId}'");
-            }
-            return bodyId;
-        }
-
-        private static VarslingFeiletKvitteringsfelter HentVarslingFeiletKvitteringsfelter(XmlDocument varslingFeiletKvittering)
+        private static VarslingFeiletKvitteringsfelter HentVarslingFeiletKvitteringsfelter(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
             var varslingFeiletKvitteringsfelter = new VarslingFeiletKvitteringsfelter();
 
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(integrasjonspunktKvittering.rawReceipt);
+            
             try
             {
-                var varslingskanal = GetXmlNodeFromDocument(varslingFeiletKvittering, "//ns9:varslingskanal").InnerText;
+                var varslingskanal = GetXmlNodeFromDocument(document, "//ns9:varslingskanal").InnerText;
                 varslingFeiletKvitteringsfelter.Varslingskanal = varslingskanal == Varslingskanal.Epost.ToString()
                     ? Varslingskanal.Epost
                     : Varslingskanal.Sms;
 
-                var beskrivelseNode = GetXmlNodeFromDocument(varslingFeiletKvittering, "//ns9:beskrivelse");
+                var beskrivelseNode = GetXmlNodeFromDocument(document, "//ns9:beskrivelse");
                 if (beskrivelseNode != null)
                     varslingFeiletKvitteringsfelter.Beskrivelse = beskrivelseNode.InnerText;
             }
@@ -235,18 +182,21 @@ namespace Difi.SikkerDigitalPost.Klient
             return varslingFeiletKvitteringsfelter;
         }
 
-        private static Feilmeldingsfelter HentFeilmeldingsfelter(XmlDocument feilmelding)
+        private static Feilmeldingsfelter HentFeilmeldingsfelter(IntegrasjonspunktKvittering integrasjonspunktKvittering)
         {
             var feilmeldingsfelter = new Feilmeldingsfelter();
 
+            XmlDocument document = new XmlDocument();
+            document.LoadXml(integrasjonspunktKvittering.rawReceipt);
+            
             try
             {
-                var feiltype = GetXmlNodeFromDocument(feilmelding, "//ns9:feiltype").InnerText;
+                var feiltype = GetXmlNodeFromDocument(document, "//ns9:feiltype").InnerText;
                 feilmeldingsfelter.SkyldigFeiltype = feiltype.ToLower().Equals(Feiltype.Klient.ToString().ToLower())
                     ? Feiltype.Klient
                     : Feiltype.Server;
 
-                feilmeldingsfelter.Detaljer = GetXmlNodeFromDocument(feilmelding, "//ns9:detaljer").InnerText;
+                feilmeldingsfelter.Detaljer = GetXmlNodeFromDocument(document, "//ns9:detaljer").InnerText;
             }
             catch (Exception e)
             {
@@ -254,32 +204,6 @@ namespace Difi.SikkerDigitalPost.Klient
             }
 
             return feilmeldingsfelter;
-        }
-
-        private static TransportFeiletKvitteringsfelter HentTransportFeiletKvitteringsfelter(XmlDocument document)
-        {
-            var transportFeiletKvitteringsfelter = new TransportFeiletKvitteringsfelter();
-
-            try
-            {
-                var errorNode = GetXmlNodeFromDocument(document, "//ns6:Error");
-                transportFeiletKvitteringsfelter.Kategori = errorNode.Attributes["category"].Value;
-                transportFeiletKvitteringsfelter.Feilkode = errorNode.Attributes["errorCode"].Value;
-                transportFeiletKvitteringsfelter.Opprinnelse = errorNode.Attributes["origin"].Value;
-                transportFeiletKvitteringsfelter.Alvorlighetsgrad = errorNode.Attributes["severity"].Value;
-                transportFeiletKvitteringsfelter.Beskrivelse = GetXmlNodeFromDocument(document, "//ns6:Description").InnerText;
-                var skyldig = GetXmlNodeFromDocument(document, "//env:Value").InnerText;
-                transportFeiletKvitteringsfelter.SkyldigFeiltype = skyldig == Feiltype.Klient.ToString()
-                    ? Feiltype.Klient
-                    : Feiltype.Server;
-            }
-            catch (Exception e)
-            {
-                throw new XmlParseException(
-                    "Feil under bygging av TransportFeilet-kvittering.", e);
-            }
-
-            return transportFeiletKvitteringsfelter;
         }
 
         protected static XmlNode GetXmlNodeFromDocument(XmlDocument document, string xPath)
@@ -301,11 +225,8 @@ namespace Difi.SikkerDigitalPost.Klient
         private static XmlNamespaceManager GetNamespaceManager(XmlDocument document)
         {
             var manager = new XmlNamespaceManager(document.NameTable);
-            manager.AddNamespace("env", NavneromUtility.SoapEnvelopeEnv12);
-            manager.AddNamespace("eb", NavneromUtility.EbXmlCore);
             manager.AddNamespace("ns3", NavneromUtility.StandardBusinessDocumentHeader);
             manager.AddNamespace("ns5", NavneromUtility.XmlDsig);
-            manager.AddNamespace("ns6", NavneromUtility.EbXmlCore);
             manager.AddNamespace("ns9", NavneromUtility.DifiSdpSchema10);
             manager.AddNamespace("ds", NavneromUtility.XmlDsig);
             return manager;
@@ -326,6 +247,7 @@ namespace Difi.SikkerDigitalPost.Klient
         {
             public Guid KonversasjonsId { get; set; }
 
+            public long IntegrasjonsPunktId { get; set; }
             public string BodyReferenceUri { get; set; }
 
             public string DigestValue { get; set; }
@@ -345,21 +267,6 @@ namespace Difi.SikkerDigitalPost.Klient
             public Feiltype SkyldigFeiltype { get; set; }
 
             public string Detaljer { get; set; }
-        }
-
-        internal class TransportFeiletKvitteringsfelter
-        {
-            public string Feilkode { get; set; }
-
-            public string Kategori { get; set; }
-
-            public string Opprinnelse { get; set; }
-
-            public string Alvorlighetsgrad { get; set; }
-
-            public string Beskrivelse { get; set; }
-
-            public Feiltype SkyldigFeiltype { get; set; }
         }
     }
 }

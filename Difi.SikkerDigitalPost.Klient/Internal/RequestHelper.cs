@@ -2,34 +2,46 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
+using System.Security.Authentication;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Difi.SikkerDigitalPost.Klient.Api;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Interface;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer;
-using Difi.SikkerDigitalPost.Klient.Envelope.Abstract;
-using Difi.SikkerDigitalPost.Klient.Envelope.Forretningsmelding;
-using Difi.SikkerDigitalPost.Klient.Envelope.Kvitteringsbekreftelse;
-using Difi.SikkerDigitalPost.Klient.Envelope.Kvitteringsforespørsel;
+using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Kvitteringer.Transport;
+using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post;
+using Difi.SikkerDigitalPost.Klient.Domene.Enums;
 using Difi.SikkerDigitalPost.Klient.Handlers;
-using Difi.SikkerDigitalPost.Klient.Internal.AsicE;
-using log4net;
+using Difi.SikkerDigitalPost.Klient.SBDH;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using StandardBusinessDocument = Difi.SikkerDigitalPost.Klient.SBDH.StandardBusinessDocument;
 
 namespace Difi.SikkerDigitalPost.Klient.Internal
 {
+    
+    internal class TransportFeiletException : Exception {
+        public TransportFeiletException(TransportFeiletKvittering TransportFeiletKvittering)
+        {
+            this.TransportFeiletKvittering = TransportFeiletKvittering;
+        }
+
+        public TransportFeiletKvittering TransportFeiletKvittering { get; set; }
+    }
+    
     internal class RequestHelper
     {
         private readonly ILogger<RequestHelper> _logger;
         private readonly ILoggerFactory _loggerFactory;
-        
-        public RequestHelper(Klientkonfigurasjon klientkonfigurasjon, ILoggerFactory loggerFactory):
+
+        public RequestHelper(Klientkonfigurasjon klientkonfigurasjon, ILoggerFactory loggerFactory) :
             this(klientkonfigurasjon, loggerFactory, new DelegatingHandler[0])
         {
         }
 
-        internal RequestHelper(Klientkonfigurasjon klientkonfigurasjon, ILoggerFactory loggerFactory, params DelegatingHandler[] additionalHandlers)
+        internal RequestHelper(Klientkonfigurasjon klientkonfigurasjon, ILoggerFactory loggerFactory,
+            params DelegatingHandler[] additionalHandlers)
         {
             ClientConfiguration = klientkonfigurasjon;
             _loggerFactory = loggerFactory;
@@ -41,31 +53,173 @@ namespace Difi.SikkerDigitalPost.Klient.Internal
 
         public HttpClient HttpClient { get; set; }
 
-        public async Task<Kvittering> SendMessage(ForretningsmeldingEnvelope envelope, DocumentBundle asiceDocumentBundle)
+        public async Task<Transportkvittering> SendMessage(StandardBusinessDocument standardBusinessDocument,
+            Dokumentpakke dokumentpakke, MetadataDocument metadataDocument)
         {
-            var result = await Send(envelope, asiceDocumentBundle).ConfigureAwait(false);
+            
+            var openRequestUri = new Uri(ClientConfiguration.Miljø.Url, "/api/messages/out/");
+            var putRequestUri = new Uri(openRequestUri, $"{standardBusinessDocument.GetConversationId()}");
 
-            return KvitteringFactory.GetKvittering(result);
+            JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+            {
+                IgnoreNullValues = true,
+            };
+            
+            string json = JsonSerializer.Serialize(standardBusinessDocument, standardBusinessDocument.GetType(), jsonSerializerOptions);
+
+            JObject sbdobj = JObject.Parse(json);
+            sbdobj.Add(standardBusinessDocument.any is DigitalForretningsMelding ? "digital" : "print", sbdobj["any"]);
+            sbdobj.Remove("any");
+
+            string newjson = sbdobj.ToString();
+            StringContent content = new StringContent(newjson, Encoding.UTF8, "application/json");
+            
+            try
+            {
+                await CreateMessage(content, openRequestUri);
+
+                await addDocument(dokumentpakke.Hoveddokument, putRequestUri);
+
+                if (metadataDocument != null)
+                {
+                    await addDocument(metadataDocument, putRequestUri);
+                }
+
+                foreach (Dokument vedlegg in dokumentpakke.Vedlegg)
+                {
+                    await addDocument(vedlegg, putRequestUri);
+                }
+
+                await CloseMessage(putRequestUri);
+
+                return new TransportOkKvittering();
+            }
+            catch (TransportFeiletException e)
+            {
+                _logger.LogError($"Feil ifbm opprettelse av forsendelse mot integrasjonspunkt: {e.TransportFeiletKvittering.ToString()}");
+                return e.TransportFeiletKvittering;
+            }
         }
 
-        public async Task<Kvittering> GetReceipt(KvitteringsforespørselEnvelope kvitteringsforespørselEnvelope)
+        private async Task CreateMessage(StringContent content, Uri openRequestUri)
         {
-            var result = await Send(kvitteringsforespørselEnvelope).ConfigureAwait(false);
+            if (ClientConfiguration.LoggForespørselOgRespons)
+            {
+                _logger.LogDebug($"Oppretter forsendelse mot integrasjonspunkt: {content}");
+            }
 
-            return KvitteringFactory.GetKvittering(result);
+            var responseMessage = await HttpClient.PostAsync(openRequestUri, content).ConfigureAwait(false);
+            var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                var transportFeiletKvittering = new TransportFeiletKvittering
+                {
+                    Skyldig = ((int) responseMessage.StatusCode).ToString().StartsWith("4")
+                        ? Feiltype.Klient
+                        : Feiltype.Server,
+                    Beskrivelse = responseMessage.ReasonPhrase,
+                    Feilkode = responseMessage.StatusCode.ToString()
+                };
+                
+                throw new TransportFeiletException(transportFeiletKvittering);
+            }
         }
 
-        public Task ConfirmReceipt(KvitteringsbekreftelseEnvelope kvitteringsbekreftelseEnvelope)
+        private async Task addDocument(IWithDocumentProperties document, Uri putRequestUri)
         {
-            return Send(kvitteringsbekreftelseEnvelope);
+            var docContent = new ByteArrayContent(document.Bytes);
+            docContent.Headers.Add("content-type", document.MimeType);
+
+            var vedleggContentDisposition = $"attachment; filename=\"{document.Filnavn}\"";
+            vedleggContentDisposition += document.Tittel == null ? "" : $"; name=\"{document.Tittel}\"";
+            docContent.Headers.Add("content-disposition", vedleggContentDisposition);
+
+            if (ClientConfiguration.LoggForespørselOgRespons)
+            {
+                _logger.LogDebug($"Sender dokument med filnavn \"{document.Filnavn}\" til integrasjonspunkt.");
+            }
+            
+            var responseMessage = await HttpClient.PutAsync(putRequestUri, docContent).ConfigureAwait(false);
+            var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                var kvittering = new TransportFeiletKvittering
+                {
+                    Skyldig = ((int)responseMessage.StatusCode).ToString().StartsWith("4") ? Feiltype.Klient : Feiltype.Server,
+                    Beskrivelse = responseMessage.ReasonPhrase,
+                    Feilkode = responseMessage.StatusCode.ToString()
+                };
+                throw new TransportFeiletException(kvittering);
+            }
+        }
+
+        private async Task CloseMessage(Uri putRequestUri)
+        {
+            if (ClientConfiguration.LoggForespørselOgRespons)
+            {
+                _logger.LogDebug($"Fullfører opprettelse mot integrasjonspunkt.");
+            }
+            
+            HttpResponseMessage responseMessage = await HttpClient.PostAsync(putRequestUri, null).ConfigureAwait(false);
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                var kvittering = new TransportFeiletKvittering
+                {
+                    Skyldig = ((int) responseMessage.StatusCode).ToString().StartsWith("4")
+                        ? Feiltype.Klient
+                        : Feiltype.Server,
+                    Beskrivelse = responseMessage.ReasonPhrase,
+                    Feilkode = responseMessage.StatusCode.ToString()
+                };
+                throw new TransportFeiletException(kvittering);
+            }
+        }
+
+        public async Task<IntegrasjonspunktKvittering> GetReceipt()
+        {
+            var uri = new Uri(ClientConfiguration.Miljø.Url, "/api/statuses/peek");
+            if (ClientConfiguration.LoggForespørselOgRespons)
+            {
+                _logger.LogDebug($"Sjekker kvitteringskøen til integrasjonspunkt.");
+            }
+            var responseMessage = await HttpClient.GetAsync(uri).ConfigureAwait(false);
+            var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+            {
+                if (ClientConfiguration.LoggForespørselOgRespons)
+                {
+                    _logger.LogDebug($"Kvitteringskøen var tom.");
+                }
+                return null;
+            }
+            return JsonSerializer.Deserialize<IntegrasjonspunktKvittering>(responseContent);
+        }
+        
+        public async Task ConfirmReceipt(long id)
+        {
+            var uri = new Uri(ClientConfiguration.Miljø.Url, $"/api/statuses/{id}");
+            if (ClientConfiguration.LoggForespørselOgRespons)
+            {
+                _logger.LogDebug($"Bekrefter id \"{id}\" fra integrasjonspunkt.");
+            }
+
+            await HttpClient.DeleteAsync(uri).ConfigureAwait(false);
         }
 
         private HttpClient HttpClientWithHandlerChain(IEnumerable<DelegatingHandler> additionalHandlers)
         {
             var proxyClientHandler = GetProxyOrDefaultHttpClientHandler();
 
-            var allDelegatingHandlers = new List<DelegatingHandler> {new UserAgentHandler(), new LoggingHandler(ClientConfiguration, _loggerFactory)};
+            var allDelegatingHandlers = new List<DelegatingHandler>
+                {new UserAgentHandler(), new LoggingHandler(ClientConfiguration, _loggerFactory)};
             allDelegatingHandlers.AddRange(additionalHandlers);
+
+            ServicePointManager.SecurityProtocol =
+                SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
             var client = HttpClientFactory.Create(
                 proxyClientHandler,
@@ -90,8 +244,12 @@ namespace Difi.SikkerDigitalPost.Klient.Internal
                 proxyOrNotHandler = new HttpClientHandler();
             }
 
-            proxyOrNotHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
-            
+            proxyOrNotHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                return true;
+            };
+            proxyOrNotHandler.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
+
             return proxyOrNotHandler;
         }
 
@@ -102,78 +260,6 @@ namespace Difi.SikkerDigitalPost.Klient.Internal
                     ClientConfiguration.ProxyHost, ClientConfiguration.ProxyPort).Uri, true);
 
             return webProxy;
-        }
-
-        private async Task<string> Send(AbstractEnvelope envelope, DocumentBundle asiceDocumentBundle = null)
-        {
-            if (ClientConfiguration.LoggForespørselOgRespons)
-            {
-                _logger.LogDebug($"Utgående {envelope.GetType().Name}, conversationId '{envelope.EnvelopeSettings.Forsendelse?.KonversasjonsId}', messageId '{envelope.EnvelopeSettings.GuidUtility.MessageId}': {envelope.Xml().OuterXml}");
-            }
-
-            var requestUri = RequestUri(envelope);
-            var httpContent = CreateHttpContent(envelope, asiceDocumentBundle);
-
-            var responseMessage = await HttpClient.PostAsync(requestUri, httpContent).ConfigureAwait(false);
-            var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            if (ClientConfiguration.LoggForespørselOgRespons)
-            {
-                _logger.LogDebug($" Innkommende {responseContent}");
-            }
-
-            return responseContent;
-        }
-
-        private Uri RequestUri(AbstractEnvelope envelope)
-        {
-            var isOutgoingForsendelse = envelope.EnvelopeSettings.Forsendelse != null;
-            return isOutgoingForsendelse
-                ? ClientConfiguration.Miljø.UrlWithOrganisasjonsnummer(envelope.EnvelopeSettings.Databehandler.Organisasjonsnummer, envelope.EnvelopeSettings.Forsendelse.Avsender.Organisasjonsnummer)
-                : ClientConfiguration.Miljø.Url;
-        }
-
-        private static HttpContent CreateHttpContent(AbstractEnvelope envelope, DocumentBundle asiceDocumentBundle)
-        {
-            var boundary = Guid.NewGuid().ToString();
-            var multipartFormDataContent = new MultipartFormDataContent(boundary);
-
-            var contentType = $"Multipart/Related; boundary=\"{boundary}\"; " + "type=\"application/soap+xml\"; " + $"start=\"<{envelope.ContentId}>\"";
-
-            var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
-            multipartFormDataContent.Headers.ContentType = mediaTypeHeaderValue;
-
-            AddEnvelopeToMultipart(envelope, multipartFormDataContent);
-            AddDocumentBundleToMultipart(asiceDocumentBundle, multipartFormDataContent);
-
-            return multipartFormDataContent;
-        }
-
-        private static void AddEnvelopeToMultipart(ISoapVedlegg vedlegg, MultipartFormDataContent meldingsinnhold)
-        {
-            var byteArrayContent = new ByteArrayContent(vedlegg.Bytes);
-
-            var adjustedContentType = vedlegg.Innholdstype.Split(';')[0];
-
-            byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue(adjustedContentType);
-            byteArrayContent.Headers.Add("Content-Transfer-Encoding", vedlegg.TransferEncoding);
-            byteArrayContent.Headers.Add("Content-ID", $"<{vedlegg.ContentId}>");
-
-            meldingsinnhold.Add(byteArrayContent);
-        }
-
-        private static void AddDocumentBundleToMultipart(DocumentBundle documentBundle, MultipartFormDataContent meldingsinnhold)
-        {
-            if (documentBundle != null)
-            {
-                var meldingsdata = new ByteArrayContent(documentBundle.BundleBytes);
-
-                meldingsdata.Headers.ContentType = new MediaTypeHeaderValue(documentBundle.ContentType);
-                meldingsdata.Headers.Add("Content-Transfer-Encoding", documentBundle.TransferEncoding);
-                meldingsdata.Headers.Add("Content-ID", $"<{documentBundle.ContentId}>");
-
-                meldingsinnhold.Add(meldingsdata);
-            }
         }
     }
 }
