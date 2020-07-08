@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.FysiskPost;
 using Difi.SikkerDigitalPost.Klient.Domene.Enums;
@@ -16,7 +17,9 @@ namespace Difi.SikkerDigitalPost.Klient.SBDH
         public Adresse returadresse { get; set; }
         
         public Retur retur { get; set; }
-        
+
+        public Dictionary<string, string> printinstruksjon { get; set; }
+
         public FysiskForretningsMelding() : base(ForretningsMeldingType.print)
         {
             

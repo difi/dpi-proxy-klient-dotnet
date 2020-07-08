@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.FysiskPost;
 using Difi.SikkerDigitalPost.Klient.Domene.Entiteter.Post;
 using Difi.SikkerDigitalPost.Klient.SBDH;
@@ -91,6 +93,9 @@ namespace Difi.SikkerDigitalPost.Klient.Utilities
             fysiskForretningsMelding.returadresse = fysiskPostInfo.ReturpostMottaker.Adresse;
 
             fysiskForretningsMelding.utskriftsfarge = fysiskPostInfo.Utskriftsfarge;
+
+            fysiskForretningsMelding.printinstruksjon =
+                fysiskPostInfo.Printinstruksjoner.ToDictionary(p => p.Navn, p => p.Verdi);
 
             fysiskForretningsMelding.retur = new Retur
             {

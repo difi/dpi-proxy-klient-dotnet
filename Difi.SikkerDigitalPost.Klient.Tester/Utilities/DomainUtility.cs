@@ -152,7 +152,11 @@ namespace Difi.SikkerDigitalPost.Klient.Tester.Utilities
         {
             var fysiskPostMottakerPersonnummer = "27127000293";
             return new FysiskPostInfo(fysiskPostMottakerPersonnummer, GetFysiskPostMottaker(), Posttype.A, Utskriftsfarge.Farge,
-                Posthåndtering.DirekteRetur, GetFysiskPostReturMottaker());
+                Posthåndtering.DirekteRetur, GetFysiskPostReturMottaker(), new List<Printinstruksjon>()
+                {
+                    new Printinstruksjon("key", "value"),
+                    new Printinstruksjon("key2", "value2")
+                });
         }
 
         internal static Forsendelse GetForsendelseSimple()
