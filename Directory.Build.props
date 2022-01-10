@@ -9,7 +9,7 @@
         <Company>Direktoratet for forvaltning og IKT (Difi)</Company>
         <Copyright>� 2015-2019 Direktoratet for forvaltning og IKT (Difi)</Copyright>
 
-        <PackageProjectUrl>https://github.com/difi/sikker-digital-post-klient-dotnet</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/difi/dpi-proxy-klient-dotnet</PackageProjectUrl>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageTags>DIFI digital elektronisk dotnet api klient client kontakt reservasjonregisteret</PackageTags>
         <Description>Klientbibliotek for integrasjon mot Oppslagstjenesten for kontakt og reservasjonregisteret</Description>
